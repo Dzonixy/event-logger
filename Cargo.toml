@@ -1,0 +1,18 @@
+[package]
+name = "event-logger"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+solana-sdk = "1.16.3"
+log = "0.4.20"
+env_logger = "0.10.0"
+futures-util = "0.3.28"
+serde_json = "1.0.105"
+serde = "1.0.188"
+base64 = "0.21.3"
+event-logger-sc = { path = "../event-logger-sc/programs/event-logger-sc/" }
+tokio-tungstenite = "0.20.0"
