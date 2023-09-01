@@ -40,14 +40,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match msg {
             Ok(Message::Text(text)) => {
                 let v: Value = serde_json::from_str(text.as_str())?;
-                let account = &v["params"]["result"]["value"]["account"];
-                let _pubkey = &v["params"]["result"]["value"]["pubkey"];
+                let account = extract_account(&v);
+                let _pubkey = extract_pubkey(&v);
 
-                let data = &account["data"][0];
+                let string_data = &account["data"][0];
 
-                if let Value::String(string_data) = data {
-                    let bytes = base64::decode(string_data)?;
-                    info!("{:#?}", try_from_slice_unchecked::<Milica>(&bytes[8..]));
+                if let Value::String(data) = &string_data {
+                    let data_bytes = base64::decode(data)?;
+                    match data_bytes[0..8] {
+                        [152, 254, 7, 141, 166, 92, 84, 200] => {
+                            let deserialized_data =
+                                try_from_slice_unchecked::<Milica>(&data_bytes[8..]);
+
+                            // TODO: Deposit to database
+                            info!("{:#?}", deserialized_data)
+                        }
+                        _ => todo!(),
+                    }
                 }
             }
             Ok(Message::Binary(bin)) => info!("Received binary: {:?}", bin),
@@ -56,4 +65,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     Ok(())
+}
+
+pub fn extract_account(value: &Value) -> &Value {
+    &value["params"]["result"]["value"]["account"]
+}
+
+pub fn extract_pubkey(value: &Value) -> &Value {
+    &value["params"]["result"]["value"]["pubkey"]
 }
